@@ -19,7 +19,7 @@ contract RNG {
     uint difficulty;
   }
 
-  uint diff;
+  uint diff = 20;
   uint public constant fee = 1 finney;
   uint public constant minDeposit = 1 ether;
 

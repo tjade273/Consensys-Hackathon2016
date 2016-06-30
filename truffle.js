@@ -10,8 +10,8 @@ module.exports = {
     "images/": "images/"
   },
   deploy: [
-    "MetaCoin",
-    "ConvertLib"
+    "ProofLib",
+    "RNG"
   ],
   rpc: {
     host: "localhost",
