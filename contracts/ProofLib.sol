@@ -18,8 +18,7 @@ library ProofLib {
     }
 
 
-    function newChallenge(Proof storage self, address _defender, address _challenger, bytes32 seed, bytes32 result, uint difficulty, uint time) {
-        self.defender = _defender;
+    function newChallenge(Proof storage self, address _challenger, bytes32 seed, bytes32 result, uint difficulty, uint time) {
         self.challenger = _challenger;
 
         self.lVal = seed;
