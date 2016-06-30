@@ -1,4 +1,6 @@
-import "./RNGHead.sol";
+contract RNG{
+  function randomNumbers(uint blockNumber) public constant returns(uint);
+}
 
 contract Token {
 
@@ -15,11 +17,11 @@ contract Slots {
 		uint currentBlockNumber;
 	}
 
-	RNGHead RandGenerator;
+	RNG RandGenerator;
 	mapping(address => game) games;
 
 	function Slots(address randGeneratorAddress) {
-		RandGenerator = RNGHead(randGeneratorAddress);
+		RandGenerator = RNG(randGeneratorAddress);
 	}
 
 	function startGame() {
