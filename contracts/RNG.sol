@@ -14,7 +14,7 @@ contract RNG {
     mapping(address => Deposit) deposits;
     mapping(uint => ProofLib.Proof[]) proofs;
     uint blockhash;
-
+    uint totalFunds;
     uint depositLimit;
     uint difficulty;
   }
@@ -53,10 +53,26 @@ contract RNG {
     p.proofs[proposal][proofIndex].defender = msg.sender;
   }
 
+  function finalize(uint blockNum, uint proofIndex){
+    if(pending[blockNum].proofs[proofIndex].finalize()){
+      int deposit = pending[blockNum].deposits[pending[blockNum].proofs[proofIndex].defender].amount;
+      pending[blockNum].deposits[pending[blockNum].proofs[proofIndex].defender].amount = 0
+      pending[blockNum].deposits[pending[blockNum].proofs[proofIndex].challenger].amount -= deposit;
+    }
+  }
+
   function declareVictor(uint blockNum, uint proposal){
     if(randomNumbers[blockNum] != 0) throw;
     if(pending[blockNum].proposals[proposal] > pending[blockNum].depositLimit){
       randomNumbers[blockNum] = proposal;
+    }
+  }
+
+  function claimReward(uint blockNum){
+    if(randomNumbers[blockNum] == pending[blockNum].deposits[msg.sender].proposal && pending[blockNum].deposits[msg.sender].amount > 0){
+      int amount = pending[blockNum].deposits[msg.sender].amount;
+      pending[blockNum].deposits[msg.sender].amount = 0;
+      msg.sender.send((pending[blockNum].totalAmount * amount)/pending[blockNum].proposals[proposal]);
     }
   }
 }
