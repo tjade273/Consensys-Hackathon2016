@@ -1,21 +1,21 @@
-import "./RNGHead.sol";
+contract Rand {
+	function newRand() returns (uint) {}
+}
 
 contract Token {
 
 }
 
 contract Slots {
-
-	RNGHead RandGenerator;
+	Rand RandGenerator;
 	bool[5] linesChosen = [false, false, false, false, false];
 	bool betMade = false;
 	bool spinInProgress = false;
 	uint currentWagerPerLine = 0;
 	uint currentBet = 0;
-	uint currentBlockNumber;
 
-	function Slots(address randGeneratorAddress) {
-		RandGenerator = RNGHead(randGeneratorAddress);
+	function Slots(Rand randGeneratorAddress) {
+		RandGenerator = Rand(randGeneratorAddress);
 	}
 
 	function placeBet(bool[] lines, uint wagerPerLine) {
@@ -33,14 +33,13 @@ contract Slots {
 
 	function startSpin() returns (bool) {
 		if(!betMade || spinInProgress) { return false; }
-		currentBlockNumber = block.number;
 		return true;
 	}
 
 	function finishSpin() returns (uint, uint, uint) {
-		uint colA = RandGenerator.randomNumbers(currentBlockNumber) % 9;
-		uint colB = uint(sha3(colA)) % 9;
-		uint colC = uint(sha3(colB)) % 9;
+		uint colA = RandGenerator.newRand() % 9;
+		uint colB = RandGenerator.newRand() % 9;
+		uint colC = RandGenerator.newRand() % 9;
 
 		spinInProgress = false;
 
@@ -84,5 +83,6 @@ contract Slots {
 
 		msg.sender.send(rewards);
 		return rewards;
+
 	}
 }
