@@ -81,8 +81,8 @@ contract Slots {
 		currentWagerPerLine = 0;
 		currentBet = 0;
 
+		msg.sender.send(rewards);
 		return rewards;
 
-		msg.sender.send(rewards);
 	}
 }
