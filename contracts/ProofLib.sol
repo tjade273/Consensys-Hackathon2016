@@ -4,21 +4,21 @@ library ProofLib {
         address defender;
         address challenger;
 
-        bytes32 lVal;
-        bytes32 rVal;
+        uint lVal;
+        uint rVal;
         uint lIndex;
         uint rIndex;
 
         uint roundTime;
         uint lastRound;
 
-        bytes32 currentVal;
+        uint currentVal;
 
         //TODO: Implement non-participation resilliancy
     }
 
 
-    function newChallenge(Proof storage self, address _challenger, bytes32 seed, bytes32 result, uint difficulty, uint time) {
+    function newChallenge(Proof storage self, address _challenger, uint seed, uint result, uint difficulty, uint time) {
         self.challenger = _challenger;
 
         self.lVal = seed;
@@ -46,7 +46,7 @@ library ProofLib {
         self.currentVal = 0;
     }
 
-    function respond(Proof storage self, bytes32 hash) {
+    function respond(Proof storage self, uint hash) {
         if (self.currentVal != 0 || msg.sender != self.defender) throw;
         self.currentVal = hash;
     }
@@ -54,13 +54,13 @@ library ProofLib {
     function finalize(Proof storage self) returns(bool confirmed) { //returns true if challenge successfully disproves proposal
 
         if (self.rIndex - self.lIndex <= 3) {
-            bytes32 hash = self.lVal;
+            bytes32 hash = bytes32(self.lVal);
 
             for (uint i; i < self.rIndex - self.lIndex; i++) {
                 hash = sha3(hash);
             }
 
-            if (hash == self.rVal) {
+            if (hash == bytes32(self.rVal)) {
                 return false;
             } else {
                 return true;
@@ -69,7 +69,7 @@ library ProofLib {
     }
 
 
-     function getProof(Proof storage self) constant returns(uint,uint,bytes32,bytes32,bytes32){
+     function getProof(Proof storage self) constant returns(uint,uint,uint,uint,uint){
          return (self.lIndex, self.rIndex, self.lVal, self.currentVal, self.rVal);
      }
 

@@ -1,5 +1,6 @@
-import "./ProofLib.sol"
+import "./ProofLib.sol";
 contract RNG {
+  using ProofLib for ProofLib.Proof;
   mapping(uint => uint) public randomNumbers;
   mapping(uint => pendingBlock) pending;
 
@@ -11,7 +12,7 @@ contract RNG {
   struct pendingBlock{
     mapping(uint => uint) proposals; //Maps proposed solutions to amount staked
     mapping(address => Deposit) deposits;
-    mapping(bytes32 => ProofLib.Proof[]) proofs;
+    mapping(uint => ProofLib.Proof[]) proofs;
     uint blockhash;
 
     uint depositLimit;
@@ -19,8 +20,8 @@ contract RNG {
   }
 
   uint diff;
-  uint public constant fee;
-  uint public constant minDeposit;
+  uint public constant fee = 1 finney;
+  uint public constant minDeposit = 1 ether;
 
   function buyNumber(uint blockNum){
     if(blockNum > block.number) throw;
@@ -34,15 +35,15 @@ contract RNG {
     if(pending[blockNum].deposits[msg.sender].proposal != 0 && pending[blockNum].deposits[msg.sender].proposal != proposal) throw;
 
     pending[blockNum].deposits[msg.sender].proposal = proposal;
-    pending[blockNum].deposits[msg.sender].amount += msg.value;
+    pending[blockNum].deposits[msg.sender].amount += int(msg.value);
     pending[blockNum].proposals[proposal] += msg.value;
   }
 
   function challenge(uint blockNum, uint proposal){
     if(msg.value < minDeposit) throw;
-    pending[blockNum].proofs[pending[blockNum].proofs.length++].newChallenge(msg.sender, pending[blockNum].blockhash, proposal, diff * 5);
+    pending[blockNum].proofs[proposal][pending[blockNum].proofs[proposal].length++].newChallenge(msg.sender, pending[blockNum].blockhash, proposal, diff, 20);
     pending[blockNum].deposits[msg.sender].proposal = proposal;
-    pending[blockNum].deposits[msg.sender].amount = -msg.value;
+    pending[blockNum].deposits[msg.sender].amount = -int(msg.value);
     pending[blockNum].proposals[proposal] -= msg.value;
   }
 
@@ -54,7 +55,7 @@ contract RNG {
 
   function declareVictor(uint blockNum, uint proposal){
     if(randomNumbers[blockNum] != 0) throw;
-    if(pending[blockNum].proposals[propopsal] > pending[blockNum].depositLimit){
+    if(pending[blockNum].proposals[proposal] > pending[blockNum].depositLimit){
       randomNumbers[blockNum] = proposal;
     }
   }
