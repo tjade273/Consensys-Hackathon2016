@@ -48,7 +48,7 @@ contract RNG {
     Deposit deposit = pending[blockNum].deposits[msg.sender]; // Get deposit for msg.sender
     if(deposit.proposal != 0 && deposit.proposal != proposal) throw; //@warn If they've already submitted a proposal, throw. They can make more accounts if they want more than one proposal (which they shouldn't)
 
-    if(pending[blockNum].blockhash == 0) initBlock(blockNum);
+    initBlock(blockNum);
     deposit.proposal = proposal; //@debug Set their proposal to the proposal (possibly overwrite with same value, a bit inefficient: `uint deposit.proposal`)
     deposit.amount += int(msg.value); //Add to their deposit (TODO: check for overflows)
     uint deposits = pending[blockNum].proposals[proposal]; // Store deposit total for later

@@ -15,7 +15,8 @@ var rngABI = JSON.parse(fs.readFileSync("/home/tjaden/Consensys-Hackathon2016/bu
 var rng = eth.contract(rngABI).at(addr);
 //console.log("RNG code: ", eth.getCode(rng.address));
 
-setInterval(function(){eth.sendTransaction({from:eth.coinbase});}, 5000);
+
+//setInterval(function(){eth.sendTransaction({from:eth.coinbase});}, 5000);
 
 var proposals = {};
 
@@ -29,12 +30,13 @@ var newBlock = eth.filter("latest").watch(
       return;
     }
 
-    var num = eth.getBlock(res).number;
+    var num = eth.getBlock(res).number -1;
     console.log("Block number: ", num);
     var block = rng.getPendingBlock.call(num);
     console.log(block);
     if(block[1] > web3.toWei(1, "finney")){
       var val = Math.min(block[2],web3.toWei(bet,"ether"));
+      rng.initBlock(num,{from:eth.coinbase});
       rng.sha.call(num, block[3], function(err,res){
         console.log(res.toString(16));
         rng.deposit(num, "0x"+res.toString(16), {from:eth.coinbase, value: val});
