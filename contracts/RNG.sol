@@ -34,7 +34,13 @@ contract RNG {
 
   function buyNumber(uint blockNum){ //Increase security of number at block blockNum
     pending[blockNum].depositLimit += msg.value*10; //@debug Increase min deposit: depositLimit + `uint msg.value` * 10 = `uint pending[blockNum].depositLimit`
+    pending[blockNum].totalFunds += msg.value;
     DepositLimitChange(blockNum, pending[blockNum].depositLimit);
+  }
+
+  function initBlock(uint blockNum){
+    pending[blockNum].difficulty = diff;
+    pending[blockNum].blockhash = uint(block.blockhash(blockNum)); // TODO, make sure not 0
   }
 
   function deposit(uint blockNum, uint proposal){
@@ -42,6 +48,7 @@ contract RNG {
     Deposit deposit = pending[blockNum].deposits[msg.sender]; // Get deposit for msg.sender
     if(deposit.proposal != 0 && deposit.proposal != proposal) throw; //@warn If they've already submitted a proposal, throw. They can make more accounts if they want more than one proposal (which they shouldn't)
 
+    if(pending[blockNum].blockhash == 0) initBlock(blockNum);
     deposit.proposal = proposal; //@debug Set their proposal to the proposal (possibly overwrite with same value, a bit inefficient: `uint deposit.proposal`)
     deposit.amount += int(msg.value); //Add to their deposit (TODO: check for overflows)
     uint deposits = pending[blockNum].proposals[proposal]; // Store deposit total for later
@@ -115,7 +122,7 @@ contract RNG {
   function declareVictor(uint blockNum, uint proposal){ //Finalize number. Once this is called, there should be no going back < TODO!!!!
     if(randomNumbers[blockNum] != 0 ||    // If there's already a number decided, throw. TODO: perform check upstream as well
         pending[blockNum].finalizeTime > block.number) throw;  // If the finalize time hasn't passed, don't finalize
-    if(pending[blockNum].proposals[proposal] > pending[blockNum].depositLimit){ // If the proposal deposits have passed the limit, it is finalized. TODO: make it stay above limin for time T
+    if(pending[blockNum].proposals[proposal] >= pending[blockNum].depositLimit){ // If the proposal deposits have passed the limit, it is finalized. TODO: make it stay above limin for time T
       randomNumbers[blockNum] = proposal; // Moment of truth....
       Victory(blockNum, proposal);
     }
@@ -128,7 +135,7 @@ contract RNG {
     pending[blockNum].deposits[msg.sender].amount > 0){ // And they bet for it, not against TODO: what happens to the loser's deposits?
       int amount = pending[blockNum].deposits[msg.sender].amount; // The amount they bet
       pending[blockNum].deposits[msg.sender].amount = 0; // Zero out deposit to prevent recursive call attacks
-      msg.sender.send((pending[blockNum].totalFunds * uint(amount))/pending[blockNum].proposals[proposal]); // Send Total ammount collected for block * percent of winning bets the sender holds
+      if(!msg.sender.send((pending[blockNum].totalFunds * uint(amount))/pending[blockNum].proposals[proposal])) throw; // Send Total ammount collected for block * percent of winning bets the sender holds
     }
   }
 
@@ -144,12 +151,11 @@ contract RNG {
 
   function getPendingBlock(uint blockNum) constant returns (uint[5]){ //Returns all statically enumerable info about pending block
     pendingBlock p = pending[blockNum];
-    return [p.blockhash, p.totalFunds, p.depositLimit, p.difficulty, p.finalizeTime];
+    return [p.blockhash, p.totalFunds, p.depositLimit, diff, p.finalizeTime];
   }
 
   function getProof(uint blockNum, uint proposal, uint proofID) constant returns(address[2], uint[7]){
     ProofLib.Proof proof = pending[blockNum].proofs[proposal][proofID];
-
 
     return ([proof.defender, proof.challenger], [proof.lVal, proof.rVal, proof.lIndex, proof.rIndex, proof.roundTime, proof.lastRound, proof.currentVal]);
   }
