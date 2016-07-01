@@ -11,7 +11,6 @@ contract RNG {
 
   struct pendingBlock{
     mapping(uint => uint) proposals; //Maps proposed solutions to amount staked
-
     mapping(address => Deposit) deposits; //Maps addresses to Deposits
     mapping(uint => ProofLib.Proof[]) proofs; //Maps proposal to array of proofs
     uint blockhash; //Seed for RNG
@@ -87,14 +86,6 @@ contract RNG {
       int amount = pending[blockNum].deposits[msg.sender].amount; // The amount they bet
       pending[blockNum].deposits[msg.sender].amount = 0; // Zero out deposit to prevent recursive call attacks
       msg.sender.send((pending[blockNum].totalFunds * uint(amount))/pending[blockNum].proposals[proposal]); // Send Total ammount collected for block * percent of winning bets the sender holds
-    }
-  }
-
-  function claimReward(uint blockNum){
-    if(randomNumbers[blockNum] == pending[blockNum].deposits[msg.sender].proposal && pending[blockNum].deposits[msg.sender].amount > 0){
-      int amount = pending[blockNum].deposits[msg.sender].amount;
-      pending[blockNum].deposits[msg.sender].amount = 0;
-      msg.sender.send((pending[blockNum].totalAmount * amount)/pending[blockNum].proposals[proposal]);
     }
   }
 }
