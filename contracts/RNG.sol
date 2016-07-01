@@ -134,7 +134,7 @@ contract RNG {
 
   function sha(uint blockNum, uint diff) constant returns (uint){ // TODO: Make sure this returns the correct result
     bytes32 temp = block.blockhash(blockNum);
-    for(uint i; i< diff; i++){
+    for(uint i = 0; i< diff; i++){
       temp = sha3(temp);
     }
     return uint(temp);
