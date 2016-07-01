@@ -1,6 +1,6 @@
-contract RNG{
+/*contract RNG{
   function randomNumbers(uint blockNumber) public constant returns(uint);
-}
+}*/
 
 contract Token {
 
@@ -17,11 +17,11 @@ contract Slots {
 		uint currentBlockNumber;
 	}
 
-	RNG RandGenerator;
+	//RNG public RandGenerator;// = RNG(0x61b23f9d160a67c8d8b8a17c2c324c6c7d7ed859);
 	mapping(address => game) games;
 
-	function Slots(address randGeneratorAddress) {
-		RandGenerator = RNG(randGeneratorAddress);
+	function Slots(/*address randGeneratorAddress*/) {
+		//RandGenerator = RNG(0x61b23f9d160a67c8d8b8a17c2c324c6c7d7ed859);//RNG(randGeneratorAddress);
 	}
 
 	function startGame() {
@@ -31,11 +31,12 @@ contract Slots {
 		games[msg.sender].currentWagerPerLine = 0;
 		games[msg.sender].currentBet = 0;
 		games[msg.sender].currentBlockNumber = 0;
+		//RandGenerator = RNG(0xb095c731dbdbe2c2eafab13dbe3840cd9273a1e1);
 	}
 
-	function placeBet(bool[] lines, uint wagerPerLine) {
-		if(lines.length == 0 || wagerPerLine == 0) { throw; }
-		uint wager = lines.length * wagerPerLine;
+	function placeBet(bool[] lines, uint numOfLines, uint wagerPerLine) {
+		if(wagerPerLine == 0) { throw; }
+		uint wager = numOfLines * wagerPerLine;
 		if(msg.value < wager) { throw; }
 		if(games[msg.sender].spinInProgress) { throw; }
 
@@ -48,21 +49,20 @@ contract Slots {
 		}
 	}
 
-	function startSpin() returns (bool) {
-		if(!games[msg.sender].betMade || games[msg.sender].spinInProgress) { return false; }
+	function startSpin() returns (uint) {
+		if(!games[msg.sender].betMade || games[msg.sender].spinInProgress) { throw; }
+		games[msg.sender].spinInProgress = true;
 		games[msg.sender].currentBlockNumber = block.number;
-		return true;
+		return games[msg.sender].currentBlockNumber;
 	}
 
-	function finishSpin() returns (uint, uint, uint) {
+	/*function finishSpin() returns (uint[3]) {
 		uint colA = RandGenerator.randomNumbers(games[msg.sender].currentBlockNumber) % 9;
 		uint colB = uint(sha3(colA)) % 9;
 		uint colC = uint(sha3(colB)) % 9;
 
-		games[msg.sender].spinInProgress = false;
-
-		return (colA, colB, colC);
-	}
+		return ([colA, colB, colC]);
+	}*/
 
 	function calculateRewards(uint[3][3] slotState) returns (uint) {
 		uint rewards = 0;
@@ -99,7 +99,7 @@ contract Slots {
 		games[msg.sender].currentWagerPerLine = 0;
 		games[msg.sender].currentBet = 0;
 
-		msg.sender.send(rewards);
+		//msg.sender.send(rewards);
 		return rewards;
 	}	
 }
