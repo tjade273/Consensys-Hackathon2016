@@ -79,6 +79,17 @@ contract RNG {
     ChallengeAccepted(blockNum, proposal, msg.sender, proofIndex);
   }
 
+  //Pure pass-through functions
+  function challenge(uint blockNum, uint proofID, bool correct){ //Passthrough to ProofLib.challenge
+    ProofLib.Proof proof = pending[blockNum].proofs[proposal][proofID]; // Fetch proof
+    proof.challenge(correct);
+  }
+
+  function respond(uint blockNum, uint proofID, uint val){
+    ProofLib.Proof proof = pending[blockNum].proofs[proposal][proofID]; // Fetch proof
+    proof.respond(val);
+  }
+
   function finalize(uint blockNum, uint proofIndex){ //Should only be called by challenger (TODO)
 
     uint proposal = pending[blockNum].deposits[msg.sender].proposal; //TODO: make sure this is a valid proposal
