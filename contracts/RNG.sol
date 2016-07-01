@@ -11,21 +11,13 @@ contract RNG {
 
   struct pendingBlock{
     mapping(uint => uint) proposals; //Maps proposed solutions to amount staked
-<<<<<<< Updated upstream
-    mapping(address => Deposit) deposits;
-    mapping(uint => ProofLib.Proof[]) proofs;
-    uint blockhash;
-    uint totalFunds;
-    uint depositLimit;
-    uint difficulty;
-=======
+
     mapping(address => Deposit) deposits; //Maps addresses to Deposits
     mapping(uint => ProofLib.Proof[]) proofs; //Maps proposal to array of proofs
     uint blockhash; //Seed for RNG
     uint totalFunds; //Total balance collected for this block
     uint depositLimit; //Limit above which proposals may be finalized
     uint difficulty; //Number of hashes on seed
->>>>>>> Stashed changes
   }
 
   uint diff = 20; //Start difficulty at 20, adjustment algo TBD
@@ -88,20 +80,6 @@ contract RNG {
     //consider throwing
   }
 
-<<<<<<< Updated upstream
-  function finalize(uint blockNum, uint proofIndex){
-    if(pending[blockNum].proofs[proofIndex].finalize()){
-      int deposit = pending[blockNum].deposits[pending[blockNum].proofs[proofIndex].defender].amount;
-      pending[blockNum].deposits[pending[blockNum].proofs[proofIndex].defender].amount = 0
-      pending[blockNum].deposits[pending[blockNum].proofs[proofIndex].challenger].amount -= deposit;
-    }
-  }
-
-  function declareVictor(uint blockNum, uint proposal){
-    if(randomNumbers[blockNum] != 0) throw;
-    if(pending[blockNum].proposals[proposal] > pending[blockNum].depositLimit){
-      randomNumbers[blockNum] = proposal;
-=======
   function claimReward(uint blockNum){ //This needs to work, or all the game theory breaks down...
     uint proposal = pending[blockNum].deposits[msg.sender].proposal; //Fetch the user's proposal
     if(randomNumbers[blockNum] == proposal && //Only if they bet on the right thing
@@ -109,7 +87,6 @@ contract RNG {
       int amount = pending[blockNum].deposits[msg.sender].amount; // The amount they bet
       pending[blockNum].deposits[msg.sender].amount = 0; // Zero out deposit to prevent recursive call attacks
       msg.sender.send((pending[blockNum].totalFunds * uint(amount))/pending[blockNum].proposals[proposal]); // Send Total ammount collected for block * percent of winning bets the sender holds
->>>>>>> Stashed changes
     }
   }
 
