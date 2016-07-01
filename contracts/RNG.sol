@@ -128,7 +128,7 @@ contract RNG {
     pending[blockNum].deposits[msg.sender].amount > 0){ // And they bet for it, not against TODO: what happens to the loser's deposits?
       int amount = pending[blockNum].deposits[msg.sender].amount; // The amount they bet
       pending[blockNum].deposits[msg.sender].amount = 0; // Zero out deposit to prevent recursive call attacks
-      msg.sender.send((pending[blockNum].totalFunds * uint(amount))/pending[blockNum].proposals[proposal]); // Send Total ammount collected for block * percent of winning bets the sender holds
+      if(!msg.sender.send((pending[blockNum].totalFunds * uint(amount))/pending[blockNum].proposals[proposal])) throw; // Send Total ammount collected for block * percent of winning bets the sender holds
     }
   }
 
@@ -149,7 +149,6 @@ contract RNG {
 
   function getProof(uint blockNum, uint proposal, uint proofID) constant returns(address[2], uint[7]){
     ProofLib.Proof proof = pending[blockNum].proofs[proposal][proofID];
-
 
     return ([proof.defender, proof.challenger], [proof.lVal, proof.rVal, proof.lIndex, proof.rIndex, proof.roundTime, proof.lastRound, proof.currentVal]);
   }
