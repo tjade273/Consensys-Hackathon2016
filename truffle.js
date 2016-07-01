@@ -15,7 +15,7 @@ module.exports = {
   deploy: [
     "ProofLib",
     "RNG",
-    "Slots"
+
   ],
   rpc: {
     host: "localhost",
