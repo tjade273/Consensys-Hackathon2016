@@ -43,7 +43,7 @@ var newBlock = eth.filter("latest").watch(
     var keys = Object.keys(proposals);
     console.log(keys);
     for(var i =0; i< keys.length; i++){
-      if(parseInt(keys[i]) + 10 < num){
+      if(parseInt(keys[i]) + 2 < num){
         console.log("Victory!!")
         if(rng.getPendingBlock(keys[i])[4] < num){
           console.log("real victory")
