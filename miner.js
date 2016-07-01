@@ -15,6 +15,8 @@ var rngABI = JSON.parse(fs.readFileSync("/home/tjaden/Consensys-Hackathon2016/bu
 var rng = eth.contract(rngABI).at(addr);
 //console.log("RNG code: ", eth.getCode(rng.address));
 
+setInterval(function(){eth.sendTransaction({from:eth.coinbase});}, 5000);
+
 var proposals = {};
 
 var newBlock = eth.filter("latest").watch(
