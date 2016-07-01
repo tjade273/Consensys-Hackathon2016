@@ -150,6 +150,7 @@ contract RNG {
   function getProof(uint blockNum, uint proposal, uint proofID) constant returns(address[2], uint[7]){
     ProofLib.Proof proof = pending[blockNum].proofs[proposal][proofID];
 
+
     return ([proof.defender, proof.challenger], [proof.lVal, proof.rVal, proof.lIndex, proof.rIndex, proof.roundTime, proof.lastRound, proof.currentVal]);
   }
 
