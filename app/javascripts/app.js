@@ -1,4 +1,5 @@
 window.onload = function() {
+  var eth = web3.eth;
   web3.eth.getAccounts(function(err, accs) {
     if (err != null) {
       alert("There was an error fetching your accounts.");
@@ -20,6 +21,11 @@ window.onload = function() {
   		var bet = web3.toWei(betEther, 'ether');
   		spin(bet);
   	});
+
+    $("#bet").on("change keyup paste", function(){
+      var betLabel = document.getElementById("betLabel")
+      betLabel.innerHTML = $(this).val();
+    })
 
   });
 

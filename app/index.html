@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,11 +34,13 @@
     </div>
   </div>
   <div>
-  <span id="row1">1 2 3</span><br/>
-  <span id="row2">4 5 6</span><br/>
-  <span id="row3">7 8 9</span><br/><br/>
-  <label>Place bet: </label><input type="text" id="bet"></input><br/>
-  <button id="spin">spin</button>
+  <span><span id="row1col1">1</span> <span id="row1col2">2</span> <span id="row1col3">3</span></span><br/>
+  <span><span id="row2col1">4</span> <span id="row2col2">5</span> <span id="row2col3">6</span></span><br/>
+  <span><span id="row3col1">7</span> <span id="row3col2">8</span> <span id="row3col3">9</span></span><br/><br/>
+  <label>Place bet: </label><input type="text" id="bet"></input><br/><label>Your bet is: </label><span id="betLabel"></span>
+  </div><br/>
+  <button id="spin">spin</button><br/>
+  <p>Your reward is: </p><span id="rewardLabel"></span>
   </div>
 </body>
 </html>
