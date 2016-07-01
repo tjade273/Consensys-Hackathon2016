@@ -24,8 +24,17 @@ contract RNG {
   uint public constant fee = 1 finney; //Minimum fee to buy random number
   uint public constant minDeposit = 1 ether;
 
+  //Debugging events
+  event DepositLimitChange(uint blockNum, uint limit);
+  event NewProposal(uint blockNum, uint proposal, uint deposit);
+  event NewChallenge(uint blockNum, uint proposal, address challenger, uint proofID);
+  event ChallengeAccepted(uint blockNum, uint proposal, address defender, uint proofID);
+  event FinalizeProof(uint blockNum, uint proposal, uint proofID, bool success);
+  event Victory(uint blockNum, uint proposal);
+
   function buyNumber(uint blockNum){ //Increase security of number at block blockNum
     pending[blockNum].depositLimit += msg.value*10; //@debug Increase min deposit: depositLimit + `uint msg.value` * 10 = `uint pending[blockNum].depositLimit`
+    DepositLimitChange(blockNum, pending[blockNum].depositLimit)
   }
 
   function deposit(uint blockNum, uint proposal){
@@ -40,11 +49,12 @@ contract RNG {
     pending[blockNum].totalFunds += msg.value; //Add deposit to total funds collected
     if(!(deposits >= pending[blockNum].depositLimit) && pending[blockNum].proposals[proposal] > pending[blockNum].depositLimit){  //If this is the new top proposal
       pending[blockNum].depositLimit = pending[blockNum].proposals[proposal];  //depositLimit increases
-      pending[blockNum].finalizeTime += 10; // add another 10 blocks to the finalization deadline
+      pending[blockNum].finalizeTime += 3; // add another 3 blocks to the finalization deadline TODO: migrate to global, possibly dynamic variable
     }
+    NewProposal(blockNum, proposal, pending[blockNum].proposals[proposal]);
   }
 
-  function challenge(uint blockNum, uint proposal){ //Create new challenge
+  function newChallenge(uint blockNum, uint proposal){ //Create new challenge
     if(msg.value < minDeposit) throw;  //@warn Don't allow deposits below min deposit: WHY?
 
     ProofLib.Proof[] proofs = pending[blockNum].proofs[proposal];
@@ -55,6 +65,8 @@ contract RNG {
     deposit.proposal = proposal; // Set sender's proposal
     pending[blockNum].deposits[msg.sender].amount = -int(msg.value); //Set sender's deposit amout to negative to indicate nay vote
     pending[blockNum].proposals[proposal] -= msg.value; //Subtract from total value backing proposal TODO: check for underflow
+
+    NewChallenge(blockNum, proposal, msg.sender, proofs.length -1);
   }
 
   function acceptChallenge(uint blockNum, uint proposal, uint proofIndex){
@@ -63,6 +75,8 @@ contract RNG {
     p.deposits[msg.sender].amount < -p.deposits[p.proofs[proposal][proofIndex].challenger].amount) throw;  //Require a vested interest in the defense
 
     p.proofs[proposal][proofIndex].defender = msg.sender; // Set the sender as the defender TODO: don't overwrite defenders
+
+    ChallengeAccepted(blockNum, proposal, msg.sender, proofIndex);
   }
 
   function finalize(uint blockNum, uint proofIndex){ //Should only be called by challenger (TODO)
@@ -75,11 +89,13 @@ contract RNG {
       int deposit = pending[blockNum].deposits[defender].amount; //Get the deposit put down by the defender
       pending[blockNum].deposits[defender].amount = 0; //Defender loses, their deposit is taken
       pending[blockNum].deposits[challenger].amount -= deposit; //Make the deposit **More negative** TODO: Make sure that msg.sender really equals challenger
+      FinalizeProof(blockNum, proposal, proofIndex, true);
     }
     else { //The defender wins
       int deposit = pending[blockNum].deposits[challenger].amount;   //Get deposit by challenger
       pending[blockNum].deposits[challenger].amount = 0;    // challenger loses their deposit
       pending[blockNum].deposits[defender].amount -= deposit; // defender gets the challenger's deposit. (negative because challenger has negative deposit)
+      FinalizeProof(blockNum, proposal, proofIndex, false);
     }
 
   }
@@ -89,8 +105,8 @@ contract RNG {
         pending[blockNum].finalizeTime > block.number) throw;  // If the finalize time hasn't passed, don't finalize
     if(pending[blockNum].proposals[proposal] > pending[blockNum].depositLimit){ // If the proposal deposits have passed the limit, it is finalized. TODO: make it stay above limin for time T
       randomNumbers[blockNum] = proposal; // Moment of truth....
+      Victory(blockNum, proposal);
     }
-
     //consider throwing
   }
 
@@ -104,7 +120,7 @@ contract RNG {
     }
   }
 
-  function sha(uint blockNum, uint diff) constant returns (uint){
+  function sha(uint blockNum, uint diff) constant returns (uint){ // TODO: Make sure this returns the correct result
     bytes32 temp = block.blockhash(blockNum);
     for(uint i; i< diff; i++){
       temp = sha3(temp);
