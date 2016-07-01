@@ -1,6 +1,4 @@
-/*contract RNG{
-  function randomNumbers(uint blockNumber) public constant returns(uint);
-}*/
+import "./RNG.sol";
 
 contract Token {
 
@@ -17,11 +15,14 @@ contract Slots {
 		uint currentBlockNumber;
 	}
 
-	//RNG public RandGenerator;// = RNG(0x61b23f9d160a67c8d8b8a17c2c324c6c7d7ed859);
+	RNG public RandGenerator;
 	mapping(address => game) games;
 
-	function Slots(/*address randGeneratorAddress*/) {
-		//RandGenerator = RNG(0x61b23f9d160a67c8d8b8a17c2c324c6c7d7ed859);//RNG(randGeneratorAddress);
+	function Slots() {
+	}
+
+	function setRNG(address randGeneratorAddress) public {
+		RandGenerator = RNG(randGeneratorAddress);
 	}
 
 	function startGame() {
@@ -31,7 +32,6 @@ contract Slots {
 		games[msg.sender].currentWagerPerLine = 0;
 		games[msg.sender].currentBet = 0;
 		games[msg.sender].currentBlockNumber = 0;
-		//RandGenerator = RNG(0xb095c731dbdbe2c2eafab13dbe3840cd9273a1e1);
 	}
 
 	function placeBet(bool[] lines, uint numOfLines, uint wagerPerLine) {
@@ -53,6 +53,7 @@ contract Slots {
 		if(!games[msg.sender].betMade || games[msg.sender].spinInProgress) { throw; }
 		games[msg.sender].spinInProgress = true;
 		games[msg.sender].currentBlockNumber = block.number;
+		RandGenerator.buyNumber.value(50 finney)(block.number);
 		return games[msg.sender].currentBlockNumber;
 	}
 
@@ -101,5 +102,5 @@ contract Slots {
 
 		//msg.sender.send(rewards);
 		return rewards;
-	}	
+	}
 }

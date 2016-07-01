@@ -12,7 +12,7 @@ window.onload = function() {
 
     accounts = accs;
     account = accounts[0];
-    
+
     setup();
 
     $("#spin").click(function() {
@@ -31,7 +31,7 @@ window.onload = function() {
   function setup() {
   	slots = Slots.at(Slots.deployed_address);
   	rand = RNG.at(RNG.deployed_address);
-
+    slots.setRNG(RNG.deployed_address, {from:eth.coinbase});
   	slots.startGame({from: account}).catch(function(e) {
   		console.log(e);
   	});
@@ -48,7 +48,7 @@ window.onload = function() {
   			});
   		},
   		function(callback) {
-  			slots.startSpin({from: account}).then(function() {
+  			slots.startSpin({from: account, value:5e17}).then(function() {
   				console.log(web3.eth.blockNumber);
   				callback(null, web3.eth.blockNumber);
   			}).catch(function(e) {
