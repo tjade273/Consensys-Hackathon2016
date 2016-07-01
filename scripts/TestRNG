@@ -1,0 +1,12 @@
+//deploy new RNG
+var rng = new RNG()
+
+rng.buyNumber(3)
+
+var hash = rng.sha(2, 20)
+log hash
+
+rng.deposit.value(1000000000000000000)(2, hash)
+rng.declareVictor(2, hash)
+
+log rng.randomNumbers(2)
