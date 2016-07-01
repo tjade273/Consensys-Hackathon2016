@@ -34,7 +34,7 @@ contract RNG {
 
   function buyNumber(uint blockNum){ //Increase security of number at block blockNum
     pending[blockNum].depositLimit += msg.value*10; //@debug Increase min deposit: depositLimit + `uint msg.value` * 10 = `uint pending[blockNum].depositLimit`
-    DepositLimitChange(blockNum, pending[blockNum].depositLimit)
+    DepositLimitChange(blockNum, pending[blockNum].depositLimit);
   }
 
   function deposit(uint blockNum, uint proposal){
@@ -80,12 +80,12 @@ contract RNG {
   }
 
   //Pure pass-through functions
-  function challenge(uint blockNum, uint proofID, bool correct){ //Passthrough to ProofLib.challenge
+  function challenge(uint blockNum, uint proposal, uint proofID, bool correct){ //Passthrough to ProofLib.challenge
     ProofLib.Proof proof = pending[blockNum].proofs[proposal][proofID]; // Fetch proof
     proof.challenge(correct);
   }
 
-  function respond(uint blockNum, uint proofID, uint val){
+  function respond(uint blockNum, uint proposal, uint proofID, uint val){
     ProofLib.Proof proof = pending[blockNum].proofs[proposal][proofID]; // Fetch proof
     proof.respond(val);
   }
@@ -95,16 +95,17 @@ contract RNG {
     uint proposal = pending[blockNum].deposits[msg.sender].proposal; //TODO: make sure this is a valid proposal
     address defender = pending[blockNum].proofs[proposal][proofIndex].defender;  //Get the defender
     address challenger = pending[blockNum].proofs[proposal][proofIndex].challenger; //Get the challenger
+    int deposit;
 
     if(pending[blockNum].proofs[proposal][proofIndex].finalize()){ //Check if the challenge was successful
-      int deposit = pending[blockNum].deposits[defender].amount; //Get the deposit put down by the defender
+      deposit = pending[blockNum].deposits[defender].amount; //Get the deposit put down by the defender
       pending[blockNum].deposits[defender].amount = 0; //Defender loses, their deposit is taken
       pending[blockNum].deposits[challenger].amount -= deposit; //Make the deposit **More negative** TODO: Make sure that msg.sender really equals challenger
       FinalizeProof(blockNum, proposal, proofIndex, true);
     }
     else { //The defender wins
-      int deposit = pending[blockNum].deposits[challenger].amount;   //Get deposit by challenger
-      pending[blockNum].deposits[challenger].amount = 0;    // challenger loses their deposit
+      deposit = pending[blockNum].deposits[challenger].amount;   //Get deposit by challenger
+      pending[blockNum].deposits[challenger].amount = 0;    //challenger loses their deposit
       pending[blockNum].deposits[defender].amount -= deposit; // defender gets the challenger's deposit. (negative because challenger has negative deposit)
       FinalizeProof(blockNum, proposal, proofIndex, false);
     }
