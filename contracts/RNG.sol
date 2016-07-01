@@ -20,7 +20,7 @@ contract RNG {
     uint finalizeTime; // Block number at which top proposal becomes final;
   }
 
-  uint diff = 20; //Start difficulty at 20, adjustment algo TBD
+  uint public diff = 15000; //Start difficulty at 20, adjustment algo TBD
   uint public constant fee = 1 finney; //Minimum fee to buy random number
   uint public constant minDeposit = 1 ether;
 
@@ -38,7 +38,7 @@ contract RNG {
   }
 
   function deposit(uint blockNum, uint proposal){
-    if(blockNum > block.number) throw; //@warn Don't let people bet on bocks in the future
+    if(blockNum > block.number || proposal == 0) throw; //@warn Don't let people bet on bocks in the future
     Deposit deposit = pending[blockNum].deposits[msg.sender]; // Get deposit for msg.sender
     if(deposit.proposal != 0 && deposit.proposal != proposal) throw; //@warn If they've already submitted a proposal, throw. They can make more accounts if they want more than one proposal (which they shouldn't)
 
@@ -132,6 +132,30 @@ contract RNG {
     }
   }
 
+  //Getters:
+  function getDeposit(uint blockNum, address addr) constant returns(uint proposal, int amount){ //Gets the deposit for a given account at blockNum
+    Deposit dep = pending[blockNum].deposits[addr];
+    return(dep.proposal, dep.amount);
+  }
+
+  function getStake(uint blockNum, uint proposal) constant returns (uint){ //Gets the net stake on proposal (indicates finality)
+    return pending[blockNum].proposals[proposal]; //Net stake on proposal
+  }
+
+  function getPendingBlock(uint blockNum) constant returns (uint[5]){ //Returns all statically enumerable info about pending block
+    pendingBlock p = pending[blockNum];
+    return [p.blockhash, p.totalFunds, p.depositLimit, p.difficulty, p.finalizeTime];
+  }
+
+  function getProof(uint blockNum, uint proposal, uint proofID) constant returns(address[2], uint[7]){
+    ProofLib.proof proof = pending[blockNum].proofs[proposal][proofID];
+
+    return ([proof.defender, proof.challenger], [proof.lVal, proof.rVal, proof.lIndex, proof.rIndex, proof.roundTime, proof.lastRound, proof.currentVal]);
+  }
+
+
+
+  //Convinience Method for testing miner
   function sha(uint blockNum, uint diff) constant returns (uint){ // TODO: Make sure this returns the correct result
     bytes32 temp = block.blockhash(blockNum);
     for(uint i = 0; i< diff; i++){
